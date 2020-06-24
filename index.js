@@ -1,11 +1,11 @@
+const Joi = require('@hapi/joi');
 const express = require('express');
 const app = express();
-const Joi = require('@hapi/joi');
 const genres = require('./routes/genres');
 
 const port = process.env.PORT || 3000;
 app.use(express.json()); // enable parsing json object
-app.use('/', genres);
+app.use('/api/genres', genres);
 
 app.get('/', (req, res) => {
   res.end('<h1 style="text-align:center">Welcome to Movies genres API</h1>');
