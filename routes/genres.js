@@ -1,31 +1,6 @@
-const mongoose = require('mongoose');
-const Joi = require('@hapi/joi');
+const { Genre, validate } = require('../models/genres');
 const express = require('express');
-const { required } = require('@hapi/joi');
 const router = express.Router();
-
-// Schema
-// const genreSchema = mongoose.Schema({
-//   name: {
-//     type: String,
-//     required: required,
-//     minlength: 5,
-//     maxlength: 50,
-//   },
-// });
-
-// Schema
-const genreSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 3,
-    maxlength: 50,
-  },
-});
-
-// Model
-const Genre = mongoose.model('Genre', genreSchema);
 
 // Get List of genres
 router.get('/', async (req, res) => {
@@ -46,7 +21,7 @@ router.get('/:id', async (req, res) => {
 
 // Post genres
 router.post('/', async (req, res) => {
-  const { error } = schemaValidator(req.body);
+  const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
   let genre = new Genre({
     name: req.body.name,
@@ -58,13 +33,7 @@ router.post('/', async (req, res) => {
 
 // Update genre
 router.put('/:id', async (req, res) => {
-  const genreFound = await Genre.findByIdAndRemove(req.params.id);
-
-  if (!genreFound) {
-    return res.status(404).send('The genre with given ID was not found!');
-  }
-
-  const { error } = schemaValidator(req.body);
+  const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const genre = await Genre.findByIdAndUpdate(
@@ -74,6 +43,9 @@ router.put('/:id', async (req, res) => {
     },
     { new: true }
   );
+
+  if (!genre)
+    return res.status(404).send('The genre with given ID was not found!');
 
   res.send(genre);
 });
@@ -87,13 +59,5 @@ router.delete('/:id', async (req, res) => {
   }
   res.send(genre);
 });
-
-function schemaValidator(data) {
-  const schema = Joi.object({
-    id: Joi.number(),
-    name: Joi.string().min(3).max(50).required(),
-  });
-  return schema.validate(data);
-}
 
 module.exports = router;
